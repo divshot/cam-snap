@@ -1,0 +1,18 @@
+{
+  "name": "cam-snap",
+  "version": "0.1.0",
+  "keywords": [
+    "polymer",
+    "web-components",
+    "webcam",
+    "selfie"
+  ],
+  "main": "cam-snap.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#^0.5.1",
+    "core-icons": "polymer/core-icons#~0.5.3"
+  },
+  "devDependencies": {
+    "web-component-tester": "Polymer/web-component-tester#^2.0.0"
+  }
+}

@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>cam-snap Demo</title>
+
+  <script src="../webcomponentsjs/webcomponents.js"></script>
+  <link rel="import" href="cam-snap.html">
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+    }
+  </style>
+</head>
+<body unresolved>
+  <h1>cam-snap</h1>
+
+  <p>Need a quick selfie? Don't worry, we got you.</p>
+
+  <p><cam-snap></cam-snap></p>
+
+  <div id="result">
+    <h3>Last Image</h3>
+    <img id="pic"></img>
+  </div>
+
+  <script>
+    document.querySelector('cam-snap').addEventListener('change', function(e) {
+      if (e.detail.data) { document.querySelector('#pic').src = e.detail.data; }
+    });
+  </script>
+</body>
+</html>

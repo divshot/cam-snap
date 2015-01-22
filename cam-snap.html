@@ -1,0 +1,191 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-icons/core-icons.html">
+<link rel="import" href="../core-icons/image-icons.html">
+
+<!--
+Take a quick snapshot from the webcam and download it or use it as a Data URI.
+
+##### Example
+
+    <cam-snap></cam-snap>
+
+@element cam-snap
+@blurb Drop-in component for capturing a quick pic from users' webcam.
+@status alpha
+@homepage http://elements.divshot.io/cam-snap
+-->
+<polymer-element name="cam-snap" attributes="value live">
+
+  <template>
+    <style>
+      :host {
+        display: inline-block;
+        width: 400px;
+        height: 267px;
+        position: relative;
+        font-family: sans-serif;
+        background: black;
+      }
+
+      #vid, #snap {
+        width: 100%;
+        height: 100%;
+        display: block;
+        position: absolute;
+      }
+
+      #bumper, #grant {
+        background: black;
+        color: white;
+      }
+
+      #bumper core-icon {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 6px;
+      }
+
+      .button core-icon {
+        width: 24px;
+        height: 24px;
+      }
+
+      .button {
+        border-radius: 50%;
+        color: white;
+        background: rgba(0,0,0,0.4);
+        margin: 10px 10px 0 0;
+        padding: 6px;
+      }
+
+      #countdown {
+        color: white;
+        text-shadow: 2px 2px 5px black;
+        font-size: 2.5em;
+        font-weight: bold;
+      }
+
+      #val {
+        text-align: center;
+      }
+      #val img {
+        max-height: 100%;
+        max-width: 100%;
+      }
+    </style>
+    <canvas id="snap" hidden></canvas>
+    <div id="bumper" fit layout vertical center center-justified hidden?="{{value || live}}" on-tap="{{goLive}}">
+      <core-icon icon="image:camera"></core-icon>
+      Snap a Picture
+    </div>
+    <div id="live" fit hidden?="{{value || !live}}">
+      <div id="grant" fit layout vertical center center-justified>Grant Permissions</div>
+      <video id="vid" autoplay></video>
+      <div hidden?="{{countdown}}" horizontal layout fit start end-justified>
+        <div class="button" on-tap="{{snap}}"><core-icon id="shutter" icon="image:camera"></core-icon></div>
+        <div class="button" on-tap="{{timerSnap}}"><core-icon id="timer" icon="image:timer-3"></core-icon></div>
+      </div>
+      <div id="countdown" hidden?="{{!countdown}}" horizontal layout fit center center-justified>
+        {{countdown}}
+      </div>
+    </div>
+    <div id="val" fit hidden?="{{!value}}">
+      <img src="{{value}}">
+      <div horizontal layout fit start end-justified>
+        <div class="button" on-tap="{{clear}}"><core-icon id="clear" icon="clear"></core-icon></div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+
+    Polymer({
+      /**
+       * If true, immediately request cam permissions. Otherwise user will need to
+       * tap/click the frame first.
+       *
+       * @attribute live
+       * @type boolean
+       * @default false
+       */
+      live: false,
+      /**
+       * The Data URI of the snapped image.
+       *
+       * @attribute value
+       * @type boolean
+       * @default false
+       */
+      value: null,
+      liveChanged: function() {
+        if (this.live && !this.$.vid.src) {
+          navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+          var that = this;
+          if (navigator.getUserMedia) {
+            navigator.getUserMedia({
+              video: true
+            },
+            function(localMediaStream) {
+              that.$.vid.src = window.URL.createObjectURL(localMediaStream);
+            }, console.error);
+          }
+        }
+      },
+      goLive: function() {
+        this.live = true;
+      },
+      /**
+       * Start a 3-second countdown to snap a picture.
+       *
+       * @method timerSnap
+       */
+      timerSnap: function() {
+        this.countdown = 3;
+      },
+      countdownChanged: function() {
+        if (this.countdown <= 0) {
+          this.countdown = null;
+          if (!this.value) {
+            this.snap();
+          }
+        } else {
+          console.log("RUNNING");
+          this.job('countdown', function(){
+            this.countdown--;
+          }, 1000);
+        }
+      },
+      /**
+       * Immediately snap a picture.
+       *
+       * @method snap
+       */
+      snap: function() {
+        var ctx = this.$.snap.getContext('2d');
+        this.$.snap.width = this.$.vid.videoWidth;
+        this.$.snap.height = this.$.vid.videoHeight;
+        ctx.drawImage(this.$.vid, 0, 0);
+        this.value = this.$.snap.toDataURL('image/png');
+      },
+      /**
+       * Clear the current value to take a new picture.
+       *
+       * @method clear
+       */
+      clear: function() {
+        this.countdown = null;
+        this.value = null;
+      },
+      /**
+       * Fired when a pic is taken or cleared.
+       *
+       * @event change
+       */
+      valueChanged: function() {
+        this.fire('change', {data: this.value});
+      }
+    });
+
+  </script>
+
+</polymer-element>
